@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">CallGuardian</string>
+    <string name="notification_channel_calls">Avvisi chiamate</string>
+    <string name="notification_channel_status">Stato protezione</string>
+</resources>

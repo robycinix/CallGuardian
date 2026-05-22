@@ -1,0 +1,12 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <receiver
+            android:name=".debug.DebugRuleAdminReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.callguardian.app.debug.DELETE_RULE_FOR_NUMBER" />
+                <action android:name="com.callguardian.app.debug.DUMP_RULES" />
+            </intent-filter>
+        </receiver>
+    </application>
+</manifest>
