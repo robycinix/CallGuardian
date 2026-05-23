@@ -44,6 +44,7 @@ class SettingsViewModel @Inject constructor(
     fun setPalette(palette: ThemePalette) = update { it.copy(palette = palette) }
     fun setHighContrast(enabled: Boolean) = update { it.copy(highContrast = enabled) }
     fun setContextualHelp(enabled: Boolean) = update { it.copy(contextualHelpEnabled = enabled) }
+    fun setLanguageCode(languageCode: String) = update { it.copy(languageCode = languageCode) }
 
     suspend fun exportBackupJson(): String = backupManager.exportJson()
 

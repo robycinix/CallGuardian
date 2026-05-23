@@ -54,18 +54,18 @@ fun StatsScreen(viewModel: LogsViewModel = hiltViewModel()) {
     if (confirmResetStats) {
         AlertDialog(
             onDismissRequest = { confirmResetStats = false },
-            title = { Text("Azzerare le statistiche?") },
-            text = { Text("Il registro eventi resta separato. Questa scelta cancella solo lo storico statistico e riparte da zero.") },
+            title = { Text(uiText("Azzerare le statistiche?", "Reset statistics?")) },
+            text = { Text(uiText("Il registro eventi resta separato. Questa scelta cancella solo lo storico statistico e riparte da zero.", "The event log stays separate. This only clears the statistics history and starts again from zero.")) },
             confirmButton = {
                 TextButton(
                     onClick = {
                         viewModel.resetStats()
                         confirmResetStats = false
                     },
-                ) { Text("Azzera statistiche") }
+                ) { Text(uiText("Azzera statistiche", "Reset statistics")) }
             },
             dismissButton = {
-                TextButton(onClick = { confirmResetStats = false }) { Text("Annulla") }
+                TextButton(onClick = { confirmResetStats = false }) { Text(uiText("Annulla", "Cancel")) }
             },
         )
     }
@@ -78,18 +78,18 @@ fun StatsScreen(viewModel: LogsViewModel = hiltViewModel()) {
     ) {
         item {
             ScreenHeader(
-                title = "Statistiche",
-                subtitle = "Andamento, zone calde e pressione spam in tempo reale.",
+                title = uiText("Statistiche", "Statistics"),
+                subtitle = uiText("Andamento, zone calde e pressione spam in tempo reale.", "Trends, hot spots, and spam pressure in real time."),
                 trailing = {
                 OutlinedButton(onClick = { confirmResetStats = true }) {
-                    Text("Azzera")
+                    Text(uiText("Azzera", "Reset"))
                 }
                 },
             )
         }
 
         item {
-            SectionCard(title = "Quadro generale") {
+            SectionCard(title = uiText("Quadro generale", "Overview")) {
                 if (noActivityYet) {
                     EmptyProtectionState()
                 }
@@ -97,19 +97,19 @@ fun StatsScreen(viewModel: LogsViewModel = hiltViewModel()) {
                     Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    StatTile("Totale", insights.totalCalls.toString(), Modifier.weight(1f))
-                    StatTile("Noiose", insights.nuisanceCalls.toString(), Modifier.weight(1f))
-                    StatTile("Indice", insights.averageRiskScore.toString(), Modifier.weight(1f))
+                    StatTile(uiText("Totale", "Total"), insights.totalCalls.toString(), Modifier.weight(1f))
+                    StatTile(uiText("Noiose", "Nuisance"), insights.nuisanceCalls.toString(), Modifier.weight(1f))
+                    StatTile(uiText("Indice", "Index"), insights.averageRiskScore.toString(), Modifier.weight(1f))
                 }
                 Row(
                     Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    StatTile("Bloccate", insights.blockedCalls.toString(), Modifier.weight(1f))
-                    StatTile("Avvisi", insights.warnedCalls.toString(), Modifier.weight(1f))
-                    StatTile("Mute", insights.silencedCalls.toString(), Modifier.weight(1f))
+                    StatTile(uiText("Bloccate", "Blocked"), insights.blockedCalls.toString(), Modifier.weight(1f))
+                    StatTile(uiText("Avvisi", "Warnings"), insights.warnedCalls.toString(), Modifier.weight(1f))
+                    StatTile(uiText("Mute", "Muted"), insights.silencedCalls.toString(), Modifier.weight(1f))
                 }
-                Text("Oggi bloccate: ${state.blockedToday}", style = MaterialTheme.typography.titleMedium)
+                Text(uiText("Oggi bloccate: ${state.blockedToday}", "Blocked today: ${state.blockedToday}"), style = MaterialTheme.typography.titleMedium)
                 LinearProgressIndicator(
                     progress = { (state.blockedToday / 20f).coerceIn(0f, 1f) },
                     modifier = Modifier
@@ -120,17 +120,17 @@ fun StatsScreen(viewModel: LogsViewModel = hiltViewModel()) {
         }
 
         item {
-            SectionCard(title = "Quando diventano insistenti") {
-                InsightLine("Ora più calda", insights.peakHour?.let { "${it.label} con ${it.total} chiamate" })
-                InsightLine("Giorno peggiore", insights.peakDay?.let { "${it.label} con ${it.total} chiamate" })
-                InsightLine("Mese peggiore", insights.worstMonth?.let { "${it.label} con ${it.total} chiamate" })
+            SectionCard(title = uiText("Quando diventano insistenti", "When they become persistent")) {
+                InsightLine(uiText("Ora più calda", "Peak hour"), insights.peakHour?.let { uiText("${it.label} con ${it.total} chiamate", "${it.label} with ${it.total} calls") })
+                InsightLine(uiText("Giorno peggiore", "Worst day"), insights.peakDay?.let { uiText("${it.label} con ${it.total} chiamate", "${it.label} with ${it.total} calls") })
+                InsightLine(uiText("Mese peggiore", "Worst month"), insights.worstMonth?.let { uiText("${it.label} con ${it.total} chiamate", "${it.label} with ${it.total} calls") })
             }
         }
 
         item {
-            SectionCard(title = "Distribuzione per ora") {
+            SectionCard(title = uiText("Distribuzione per ora", "Hourly distribution")) {
                 if (insights.hourlyDistribution.all { it.total == 0 }) {
-                    EmptyChartState("Nessuna chiamata bloccata finora. Sei al sicuro!")
+                    EmptyChartState(uiText("Nessuna chiamata bloccata finora. Sei al sicuro!", "No blocked calls so far. You are safe."))
                 } else {
                     BarChart(
                         stats = insights.hourlyDistribution,
@@ -145,15 +145,15 @@ fun StatsScreen(viewModel: LogsViewModel = hiltViewModel()) {
         }
 
         item {
-            SectionCard(title = "Giorni più pesanti") {
+            SectionCard(title = uiText("Giorni più pesanti", "Heaviest days")) {
                 HorizontalStatRows(insights.weekdayDistribution)
             }
         }
 
         item {
-            SectionCard(title = "Mesi peggiori") {
+            SectionCard(title = uiText("Mesi peggiori", "Worst months")) {
                 if (insights.monthlyDistribution.all { it.total == 0 }) {
-                    EmptyChartState("Nessuno storico ancora: CallGuardian resta in ascolto.")
+                    EmptyChartState(uiText("Nessuno storico ancora: CallGuardian resta in ascolto.", "No history yet: CallGuardian is listening."))
                 } else {
                     BarChart(
                         stats = insights.monthlyDistribution,
@@ -168,9 +168,9 @@ fun StatsScreen(viewModel: LogsViewModel = hiltViewModel()) {
         }
 
         item {
-            SectionCard(title = "Zone più aggressive") {
+            SectionCard(title = uiText("Zone più aggressive", "Most aggressive areas")) {
                 if (insights.aggressiveCountries.isEmpty()) {
-                    Text("Nessuna zona aggressiva rilevata nello storico statistiche.")
+                    Text(uiText("Nessuna zona aggressiva rilevata nello storico statistiche.", "No aggressive area detected in the statistics history."))
                 } else {
                     val maxScore = insights.aggressiveCountries.maxOf { it.aggressionScore }.coerceAtLeast(1)
                     insights.aggressiveCountries.forEach { stat ->
@@ -181,14 +181,14 @@ fun StatsScreen(viewModel: LogsViewModel = hiltViewModel()) {
         }
 
         item {
-            SectionCard(title = "Categorie spam") {
+            SectionCard(title = uiText("Categorie spam", "Spam categories")) {
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    StatTile("Stop", insights.blockedCalls.toString())
-                    StatTile("Alert", insights.warnedCalls.toString())
-                    StatTile("Mute", insights.silencedCalls.toString())
+                    StatTile(uiText("Stop", "Stop"), insights.blockedCalls.toString())
+                    StatTile(uiText("Alert", "Alert"), insights.warnedCalls.toString())
+                    StatTile(uiText("Mute", "Mute"), insights.silencedCalls.toString())
                 }
             }
         }
@@ -210,9 +210,9 @@ private fun EmptyProtectionState() {
         ) {
             Icon(Icons.Default.VerifiedUser, contentDescription = null)
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text("Nessuna chiamata bloccata finora. Sei al sicuro!", fontWeight = FontWeight.SemiBold)
+                Text(uiText("Nessuna chiamata bloccata finora. Sei al sicuro!", "No blocked calls so far. You are safe."), fontWeight = FontWeight.SemiBold)
                 Text(
-                    "Le statistiche si riempiranno automaticamente appena arriveranno eventi reali.",
+                    uiText("Le statistiche si riempiranno automaticamente appena arriveranno eventi reali.", "Statistics will fill automatically as soon as real events arrive."),
                     style = MaterialTheme.typography.bodySmall,
                 )
             }
@@ -237,7 +237,7 @@ private fun EmptyChartState(message: String) {
             Icon(Icons.Default.VerifiedUser, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
             Text(message, fontWeight = FontWeight.SemiBold)
             Text(
-                "Non devi fare nulla: la protezione registrera gli eventi quando servira.",
+                uiText("Non devi fare nulla: la protezione registrera gli eventi quando servira.", "You do not need to do anything: protection will record events when needed."),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -263,7 +263,7 @@ private fun StatTile(label: String, value: String, modifier: Modifier = Modifier
 private fun InsightLine(label: String, value: String?) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
         Text(label)
-        Text(value ?: "Dati insufficienti", fontWeight = FontWeight.SemiBold)
+        Text(value ?: uiText("Dati insufficienti", "Not enough data"), fontWeight = FontWeight.SemiBold)
     }
 }
 
@@ -334,7 +334,7 @@ private fun AggressiveCountryRow(stat: CountryAggressionStat, maxScore: Int) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(stat.countryIso, fontWeight = FontWeight.SemiBold)
-            Text("${stat.total} eventi, indice ${stat.aggressionScore}")
+            Text(uiText("${stat.total} eventi, indice ${stat.aggressionScore}", "${stat.total} events, index ${stat.aggressionScore}"))
         }
         LinearProgressIndicator(
             progress = { (stat.aggressionScore.toFloat() / maxScore).coerceIn(0f, 1f) },
@@ -344,7 +344,7 @@ private fun AggressiveCountryRow(stat: CountryAggressionStat, maxScore: Int) {
             color = MaterialTheme.colorScheme.error,
         )
         Text(
-            "Bloccate ${stat.blocked} - avvisi ${stat.warned} - silenziate ${stat.silenced}",
+            uiText("Bloccate ${stat.blocked} - avvisi ${stat.warned} - silenziate ${stat.silenced}", "Blocked ${stat.blocked} - warnings ${stat.warned} - silenced ${stat.silenced}"),
             style = MaterialTheme.typography.bodySmall,
         )
     }

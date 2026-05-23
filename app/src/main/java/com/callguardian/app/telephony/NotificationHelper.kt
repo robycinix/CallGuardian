@@ -31,7 +31,7 @@ class NotificationHelper @Inject constructor(
                 context.getString(R.string.notification_channel_calls),
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
-                description = "Registro degli avvisi locali per chiamate sospette o bloccate"
+                description = context.getString(R.string.notification_channel_calls_description)
             }
         )
         manager.createNotificationChannel(

@@ -374,10 +374,10 @@ private fun HelpContent.defaultExamples(): List<String> {
         )
         "permessi" in normalizedTitle || "ruolo" in normalizedTitle -> listOf(
             "Completa questo passaggio durante la prima configurazione.",
-            "Ricontrollalo dopo aggiornamenti Android o cambio telefono.",
+            "Ricontrollalo dopo aggiornamenti Android o cambio dispositivo.",
         )
         "tema" in normalizedTitle || "palette" in normalizedTitle || "contrasto" in normalizedTitle -> listOf(
-            "Scegli l'opzione piu leggibile nell'ambiente in cui usi di piu il telefono.",
+            "Scegli l'opzione piu leggibile nell'ambiente in cui usi di piu il dispositivo.",
             "Prova alto contrasto se testi e pulsanti non risaltano abbastanza.",
         )
         else -> listOf(

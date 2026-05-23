@@ -24,6 +24,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerInputScope
@@ -31,12 +34,14 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.callguardian.app.R
 import com.callguardian.app.ui.screens.LogScreen
 import com.callguardian.app.ui.screens.ProtectionScreen
 import com.callguardian.app.ui.screens.RulesScreen
@@ -54,14 +59,15 @@ fun CallGuardianNavHost() {
     val navController = rememberNavController()
     val useRail = LocalConfiguration.current.screenWidthDp >= 700
     val destinations = listOf(
-        Destination("protection", "Protezione") { Icon(Icons.Default.Home, null) },
-        Destination("rules", "Regole") { Icon(Icons.AutoMirrored.Filled.List, null) },
-        Destination("logs", "Registro") { Icon(Icons.Default.History, null) },
-        Destination("stats", "Statistiche") { Icon(Icons.Default.BarChart, null) },
-        Destination("settings", "Opzioni") { Icon(Icons.Default.Settings, null) },
+        Destination("protection", stringResource(R.string.nav_protection)) { Icon(Icons.Default.Home, null) },
+        Destination("rules", stringResource(R.string.nav_rules)) { Icon(Icons.AutoMirrored.Filled.List, null) },
+        Destination("logs", stringResource(R.string.nav_logs)) { Icon(Icons.Default.History, null) },
+        Destination("stats", stringResource(R.string.nav_stats)) { Icon(Icons.Default.BarChart, null) },
+        Destination("settings", stringResource(R.string.nav_settings)) { Icon(Icons.Default.Settings, null) },
     )
     val backStack by navController.currentBackStackEntryAsState()
     val current = backStack?.destination
+    var rulesInitialTab by remember { mutableStateOf("lists") }
     val navigateToDestination: (Destination) -> Unit = { destination ->
         navController.navigate(destination.route) {
             launchSingleTop = true
@@ -70,6 +76,10 @@ fun CallGuardianNavHost() {
                 saveState = true
             }
         }
+    }
+    val openRulesTab: (String) -> Unit = { tab ->
+        rulesInitialTab = tab
+        destinations.firstOrNull { it.route == "rules" }?.let(navigateToDestination)
     }
 
     if (useRail) {
@@ -100,6 +110,8 @@ fun CallGuardianNavHost() {
                 destinations = destinations,
                 currentRoute = current?.route,
                 onNavigate = navigateToDestination,
+                rulesInitialTab = rulesInitialTab,
+                onOpenRulesTab = openRulesTab,
             )
         }
     } else {
@@ -134,6 +146,8 @@ fun CallGuardianNavHost() {
                 destinations = destinations,
                 currentRoute = current?.route,
                 onNavigate = navigateToDestination,
+                rulesInitialTab = rulesInitialTab,
+                onOpenRulesTab = openRulesTab,
             )
         }
     }
@@ -145,10 +159,16 @@ private fun AppNavHostContent(
     destinations: List<Destination>,
     currentRoute: String?,
     onNavigate: (Destination) -> Unit,
+    rulesInitialTab: String,
+    onOpenRulesTab: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val density = LocalDensity.current
     val swipeThresholdPx = with(density) { 120.dp.toPx() }
+    val navigateFromRoute: (String, Int) -> Unit = { route, offset ->
+        val currentIndex = destinations.indexOfFirst { it.route == route }
+        destinations.getOrNull(currentIndex + offset)?.let(onNavigate)
+    }
 
     NavHost(
         navController = navController,
@@ -163,8 +183,23 @@ private fun AppNavHostContent(
             )
             .padding(horizontal = 0.dp),
     ) {
-        composable("protection") { ProtectionScreen() }
-        composable("rules") { RulesScreen() }
+        composable("protection") {
+            ProtectionScreen(
+                onOpenLogs = { destinations.firstOrNull { it.route == "logs" }?.let(onNavigate) },
+                onOpenSettings = { destinations.firstOrNull { it.route == "settings" }?.let(onNavigate) },
+                onOpenRulesLists = { onOpenRulesTab("lists") },
+                onOpenRulesGroups = { onOpenRulesTab("groups") },
+                onOpenRulesForeign = { onOpenRulesTab("foreign") },
+                onOpenRulesSummary = { onOpenRulesTab("summary") },
+            )
+        }
+        composable("rules") {
+            RulesScreen(
+                onSwipePastStart = { navigateFromRoute("rules", -1) },
+                onSwipePastEnd = { navigateFromRoute("rules", 1) },
+                initialTab = rulesInitialTab,
+            )
+        }
         composable("logs") { LogScreen() }
         composable("stats") { StatsScreen() }
         composable("settings") { SettingsScreen() }
@@ -176,13 +211,16 @@ private fun Modifier.gestureNavigation(
     destinations: List<Destination>,
     swipeThresholdPx: Float,
     onNavigate: (Destination) -> Unit,
-): Modifier = pointerInput(currentRoute, destinations, swipeThresholdPx) {
-    detectPageSwipe(
-        currentRoute = currentRoute,
-        destinations = destinations,
-        swipeThresholdPx = swipeThresholdPx,
-        onNavigate = onNavigate,
-    )
+): Modifier {
+    if (currentRoute == "rules") return this
+    return pointerInput(currentRoute, destinations, swipeThresholdPx) {
+        detectPageSwipe(
+            currentRoute = currentRoute,
+            destinations = destinations,
+            swipeThresholdPx = swipeThresholdPx,
+            onNavigate = onNavigate,
+        )
+    }
 }
 
 private suspend fun PointerInputScope.detectPageSwipe(

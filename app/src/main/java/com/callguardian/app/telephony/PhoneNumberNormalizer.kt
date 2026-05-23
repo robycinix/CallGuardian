@@ -1,7 +1,6 @@
 package com.callguardian.app.telephony
 
 import android.content.Context
-import android.telephony.TelephonyManager
 import com.callguardian.app.core.model.CountryDialingInfo
 import com.callguardian.app.core.model.SupportedCountries
 import com.google.i18n.phonenumbers.NumberParseException
@@ -57,11 +56,7 @@ class PhoneNumberNormalizer @Inject constructor(
     }
 
     private fun homeRegionIso(): String {
-        val telephonyManager = context?.getSystemService(Context.TELEPHONY_SERVICE) as? TelephonyManager
-        return listOf(
-            telephonyManager?.simCountryIso,
-            telephonyManager?.networkCountryIso,
-        ).firstOrNull { !it.isNullOrBlank() }?.uppercase() ?: "IT"
+        return DeviceCountryResolver.homeRegionIso(context)
     }
 
     private fun String.isAnonymousToken(): Boolean {

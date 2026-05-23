@@ -10,6 +10,7 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -57,6 +58,8 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -67,9 +70,9 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.callguardian.app.LocalPermissionActions
+import com.callguardian.app.R
 import com.callguardian.app.core.model.CallAction
 import com.callguardian.app.core.model.PermissionSummary
-import com.callguardian.app.ui.components.ContextualHelpButton
 import com.callguardian.app.ui.components.SectionCard
 import com.callguardian.app.viewmodel.ProtectionViewModel
 import java.text.DateFormat
@@ -77,13 +80,22 @@ import java.util.Date
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun ProtectionScreen(viewModel: ProtectionViewModel = hiltViewModel()) {
+fun ProtectionScreen(
+    viewModel: ProtectionViewModel = hiltViewModel(),
+    onOpenLogs: () -> Unit = {},
+    onOpenSettings: () -> Unit = {},
+    onOpenRulesLists: () -> Unit = {},
+    onOpenRulesGroups: () -> Unit = {},
+    onOpenRulesForeign: () -> Unit = {},
+    onOpenRulesSummary: () -> Unit = {},
+) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val permissionActions = LocalPermissionActions.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val setupComplete = state.permissions?.isSetupComplete() == true
     val listState = rememberLazyListState()
     val heroScroll = listState.firstVisibleItemScrollOffset.coerceAtMost(420) / 420f
+    val showBottomStatus = setupComplete && LocalConfiguration.current.screenHeightDp >= 720
 
     LaunchedEffect(Unit) { viewModel.refreshPermissions() }
     DisposableEffect(lifecycleOwner) {
@@ -96,69 +108,110 @@ fun ProtectionScreen(viewModel: ProtectionViewModel = hiltViewModel()) {
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
-    LazyColumn(
-        state = listState,
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        item {
-            Column(
-                modifier = Modifier.graphicsLayer {
-                    alpha = 1f - heroScroll * 0.18f
-                    translationY = -heroScroll * 18f
-                },
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                HeroBrandLockup(
-                    subtitle = protectionHeadline(state.permissions),
-                    readiness = state.readinessScore,
-                    roleHeld = state.permissions?.callScreeningRoleHeld == true,
-                )
-            }
-        }
-        item {
-            CommandCenterPanel(
-                readiness = state.readinessScore,
-                blockedToday = state.blockedToday,
-                roleHeld = state.permissions?.callScreeningRoleHeld == true,
-                permissions = state.permissions,
-                protectionLevel = state.settings.protectionLevel.displayName(),
-            )
-        }
-        item {
-            AnimatedVisibility(visible = !setupComplete) {
-                SetupGuidePanel(
-                    readiness = state.readinessScore,
-                    permissions = state.permissions,
-                    onRecommendedSetup = viewModel::applyRecommendedSetup,
-                    permissionActions = permissionActions,
-                )
-            }
-        }
-        item {
-            SectionCard(
-                title = "Stato protezione",
-                trailing = {
-                    ContextualHelpButton(
-                        title = "Livello protezione",
-                        explanation = "Regola la severità del punteggio rischio prima del filtro chiamate.",
-                        benefits = "Permette di adattare l'app al tuo profilo di rischio.",
-                        drawbacks = "Livelli aggressivi possono aumentare gli avvisi.",
-                        advice = "Bilanciata è adatta all'uso quotidiano.",
-                        androidLimits = "Il blocco effettivo richiede il ruolo ID chiamante e spam.",
+    Box(Modifier.fillMaxSize()) {
+        LazyColumn(
+            state = listState,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            item {
+                Column(
+                    modifier = Modifier.graphicsLayer {
+                        alpha = 1f - heroScroll * 0.18f
+                        translationY = -heroScroll * 18f
+                    },
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    HeroBrandLockup(
+                        subtitle = protectionHeadline(state.permissions),
+                        readiness = state.readinessScore,
+                        roleHeld = state.permissions?.callScreeningRoleHeld == true,
                     )
                 }
-            ) {
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Column {
-                        Text(state.settings.protectionLevel.displayName())
-                        Text("Chiamate bloccate oggi: ${state.blockedToday}", style = MaterialTheme.typography.bodyMedium)
-                    }
-                    Icon(Icons.Default.Phone, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+            }
+            item {
+                CommandCenterPanel(
+                    readiness = state.readinessScore,
+                    blockedToday = state.blockedToday,
+                    roleHeld = state.permissions?.callScreeningRoleHeld == true,
+                    permissions = state.permissions,
+                    protectionLevel = state.settings.protectionLevel.localizedDisplayName(),
+                    onBlockedClick = onOpenLogs,
+                    onLevelClick = onOpenSettings,
+                )
+            }
+            item {
+                AnimatedVisibility(visible = !setupComplete) {
+                    SetupGuidePanel(
+                        readiness = state.readinessScore,
+                        permissions = state.permissions,
+                        onRecommendedSetup = viewModel::applyRecommendedSetup,
+                        permissionActions = permissionActions,
+                    )
                 }
             }
+            item {
+                RulesQuickActionsPanel(
+                    onOpenLists = onOpenRulesLists,
+                    onOpenGroups = onOpenRulesGroups,
+                    onOpenForeign = onOpenRulesForeign,
+                    onOpenSummary = onOpenRulesSummary,
+                )
+            }
+        }
+        if (showBottomStatus) {
+            HomeBottomStatusStrip(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun HomeBottomStatusStrip(modifier: Modifier = Modifier) {
+    Surface(
+        modifier = Modifier
+            .then(modifier)
+            .fillMaxWidth()
+            .height(52.dp),
+        shape = MaterialTheme.shapes.small,
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f),
+        contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                Icons.Default.CheckCircle,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+            )
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(
+                    text = uiText("Protezione locale attiva", "Local protection active"),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    text = uiText("Regole e registro restano sul dispositivo", "Rules and logs stay on device"),
+                    style = MaterialTheme.typography.bodySmall,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            Text(
+                text = uiText("Locale", "Local"),
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.SemiBold,
+            )
         }
     }
 }
@@ -233,7 +286,7 @@ private fun HeroBrandLockup(
             verticalArrangement = Arrangement.spacedBy(3.dp),
         ) {
             Text(
-                text = "CallGuardian",
+                text = stringResource(R.string.app_name),
                 style = MaterialTheme.typography.headlineMedium,
                 color = adaptiveTextColor,
                 fontWeight = FontWeight.ExtraBold,
@@ -257,7 +310,7 @@ private fun HeroBrandLockup(
             ),
         ) {
             Text(
-                text = if (roleHeld) "Protetto" else "$readiness%",
+                text = if (roleHeld) stringResource(R.string.brand_protected) else "$readiness%",
                 modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
                 color = MaterialTheme.colorScheme.onSurface,
                 style = MaterialTheme.typography.labelLarge,
@@ -274,6 +327,8 @@ private fun CommandCenterPanel(
     roleHeld: Boolean,
     permissions: PermissionSummary?,
     protectionLevel: String,
+    onBlockedClick: () -> Unit,
+    onLevelClick: () -> Unit,
 ) {
     val animatedReadiness by animateFloatAsState(
         targetValue = readiness / 100f,
@@ -288,7 +343,7 @@ private fun CommandCenterPanel(
         colorScheme.tertiaryContainer
     }
     val panelText = colorScheme.onSurface
-    SectionCard(title = "Centro protezione") {
+    SectionCard(title = stringResource(R.string.command_center_title)) {
         Box(
             Modifier
                 .fillMaxWidth()
@@ -316,7 +371,7 @@ private fun CommandCenterPanel(
                 )
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text(
-                        if (roleHeld) "Scudo chiamate agganciato ad Android" else "Ultimo aggancio da completare",
+                        if (roleHeld) stringResource(R.string.command_center_android_connected) else stringResource(R.string.command_center_last_step),
                         color = panelText,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
@@ -341,9 +396,9 @@ private fun CommandCenterPanel(
                 .height(IntrinsicSize.Min),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            MetricTile("Stato", if (roleHeld) "Operativa" else "Da completare", Modifier.weight(1f))
-            MetricTile("Bloccate", blockedToday.toString(), Modifier.weight(1f))
-            MetricTile("Livello", protectionLevel, Modifier.weight(1f))
+            MetricTile(stringResource(R.string.metric_status), if (roleHeld) stringResource(R.string.metric_status_operational) else stringResource(R.string.metric_status_incomplete), Modifier.weight(1f))
+            MetricTile(stringResource(R.string.metric_blocked), blockedToday.toString(), Modifier.weight(1f), onClick = onBlockedClick)
+            MetricTile(stringResource(R.string.metric_level), protectionLevel, Modifier.weight(1f), onClick = onLevelClick)
         }
         ReadinessProgressIndicator(
             progress = animatedReadiness,
@@ -363,10 +418,62 @@ private fun CommandCenterPanel(
             )
             Text(
                 if (roleHeld) {
-                    "CallGuardian è operativo in attesa di chiamate sospette!"
+                    stringResource(R.string.protection_operational_message)
                 } else {
-                    "Attiva il ruolo ID chiamante e spam: e il passaggio che abilita il blocco reale."
+                    stringResource(R.string.protection_role_missing_message)
                 }
+            )
+        }
+    }
+}
+
+@Composable
+private fun RulesQuickActionsPanel(
+    onOpenLists: () -> Unit,
+    onOpenGroups: () -> Unit,
+    onOpenForeign: () -> Unit,
+    onOpenSummary: () -> Unit,
+) {
+    SectionCard(title = uiText("Centro regole", "Rules center")) {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .height(IntrinsicSize.Min),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            QuickRuleTile(uiText("Liste", "Lists"), onOpenLists, Modifier.weight(1f))
+            QuickRuleTile(uiText("Gruppi", "Groups"), onOpenGroups, Modifier.weight(1f))
+            QuickRuleTile(uiText("Esteri", "Foreign"), onOpenForeign, Modifier.weight(1f))
+            QuickRuleTile(uiText("Sintesi", "Summary"), onOpenSummary, Modifier.weight(1f))
+        }
+    }
+}
+
+@Composable
+private fun RowScope.QuickRuleTile(
+    label: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier
+            .fillMaxHeight()
+            .clickable(onClick = onClick),
+        shape = MaterialTheme.shapes.small,
+        color = MaterialTheme.colorScheme.primaryContainer,
+    ) {
+        Column(
+            Modifier.padding(horizontal = 8.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                text = label,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.SemiBold,
             )
         }
     }
@@ -414,9 +521,21 @@ private fun readinessColor(progress: Float): Color {
 }
 
 @Composable
-private fun RowScope.MetricTile(label: String, value: String, modifier: Modifier = Modifier) {
+private fun RowScope.MetricTile(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null,
+) {
+    val tileModifier = if (onClick != null) {
+        modifier
+            .fillMaxHeight()
+            .clickable(onClick = onClick)
+    } else {
+        modifier.fillMaxHeight()
+    }
     Surface(
-        modifier = modifier.fillMaxHeight(),
+        modifier = tileModifier,
         shape = MaterialTheme.shapes.small,
         color = MaterialTheme.colorScheme.primaryContainer,
     ) {
@@ -447,7 +566,7 @@ private fun SetupGuidePanel(
     permissionActions: com.callguardian.app.PermissionActions,
 ) {
     val glow = 0.38f
-    SectionCard(title = "Visita guidata") {
+    SectionCard(title = stringResource(R.string.setup_tour_title)) {
         Box(
             Modifier
                 .fillMaxWidth()
@@ -467,14 +586,14 @@ private fun SetupGuidePanel(
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     Icon(Icons.Default.RocketLaunch, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary)
                     Text(
-                        "Configuriamo CallGuardian con le scelte ideali",
+                        stringResource(R.string.setup_tour_heading),
                         color = MaterialTheme.colorScheme.onPrimary,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                     )
                 }
                 Text(
-                    "La guida resta visibile solo finche manca qualcosa. Quando la protezione e pronta, sparisce.",
+                    stringResource(R.string.setup_tour_body),
                     color = MaterialTheme.colorScheme.onPrimary,
                     style = MaterialTheme.typography.bodyMedium,
                 )
@@ -489,39 +608,39 @@ private fun SetupGuidePanel(
         }
         ElevatedButton(onClick = onRecommendedSetup, modifier = Modifier.fillMaxWidth()) {
             Icon(Icons.Default.Tune, contentDescription = null)
-            Text("Applica configurazione consigliata")
+            Text(stringResource(R.string.setup_recommended))
         }
         SetupStep(
-            title = "Permessi telefono e rubrica",
-            detail = "Servono per riconoscere contatti, numero chiamante e registro.",
+            title = stringResource(R.string.setup_phone_title),
+            detail = stringResource(R.string.setup_phone_detail),
             complete = permissions?.runtimePermissionsGranted == true,
             icon = { Icon(Icons.Default.Phone, contentDescription = null) },
-            actionLabel = "Concedi",
+            actionLabel = stringResource(R.string.action_grant),
             onClick = permissionActions.requestRuntimePermissions,
         )
         SetupStep(
-            title = "Ruolo ID chiamante e spam",
-            detail = "E il permesso decisivo: consente ad Android di affidare le chiamate a CallGuardian.",
+            title = stringResource(R.string.setup_call_screening_title),
+            detail = stringResource(R.string.setup_call_screening_detail),
             complete = permissions?.callScreeningRoleHeld == true,
             icon = { Icon(Icons.Default.Security, contentDescription = null) },
-            actionLabel = "Attiva ruolo",
+            actionLabel = stringResource(R.string.action_activate_role),
             onClick = permissionActions.requestCallScreeningRole,
             emphasized = true,
         )
         SetupStep(
-            title = "Notifiche",
-            detail = "Mostrano il risultato dopo un blocco o un avviso.",
+            title = stringResource(R.string.setup_notifications_title),
+            detail = stringResource(R.string.setup_notifications_detail),
             complete = permissions?.notificationPermissionGranted == true,
             icon = { Icon(Icons.Default.Notifications, contentDescription = null) },
-            actionLabel = "Concedi",
+            actionLabel = stringResource(R.string.action_grant),
             onClick = permissionActions.requestRuntimePermissions,
         )
         SetupStep(
-            title = "Popup durante la chiamata",
-            detail = "Opzionale, ma rende visibile l'avviso sopra le altre app.",
+            title = stringResource(R.string.setup_overlay_title),
+            detail = stringResource(R.string.setup_overlay_detail),
             complete = permissions?.overlayAllowed == true,
             icon = { Icon(Icons.Default.Visibility, contentDescription = null) },
-            actionLabel = "Apri popup",
+            actionLabel = stringResource(R.string.action_open_popup),
             onClick = permissionActions.openOverlaySettings,
         )
     }
@@ -556,7 +675,7 @@ private fun SetupStep(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (complete) {
-                Icon(Icons.Default.CheckCircle, contentDescription = "Completato", tint = MaterialTheme.colorScheme.secondary)
+                Icon(Icons.Default.CheckCircle, contentDescription = stringResource(R.string.content_completed), tint = MaterialTheme.colorScheme.secondary)
             } else {
                 Box(Modifier.alpha(if (emphasized) 1f else 0.82f)) { icon() }
             }
@@ -608,7 +727,7 @@ fun EventRow(
                     Text(title, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     Text(subtitle, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     Text(
-                        "$formattedTime - ${action.displayName()}",
+                        "$formattedTime - ${action.localizedDisplayName()}",
                         style = MaterialTheme.typography.labelMedium,
                         color = if (action == CallAction.BLOCKED) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
                         maxLines = 1,
@@ -632,7 +751,7 @@ fun EventRow(
             Column(modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(subtitle)
                 Text(formattedTime)
-                Text("Azione: ${action.displayName()}", color = if (action == CallAction.BLOCKED) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary)
+                Text(stringResource(R.string.event_action_format, action.localizedDisplayName()), color = if (action == CallAction.BLOCKED) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary)
             }
             actions()
         }
@@ -640,27 +759,30 @@ fun EventRow(
     }
 }
 
+@Composable
 private fun protectionHeadline(permissions: PermissionSummary?): String {
     return if (permissions?.callScreeningRoleHeld == true) {
-        "Protezione locale attiva sulle chiamate in arrivo"
+        stringResource(R.string.protection_headline_active)
     } else {
-        "Completa la configurazione per attivare il blocco chiamate"
+        stringResource(R.string.protection_headline_incomplete)
     }
 }
 
+@Composable
 private fun readinessTitle(readiness: Int, roleHeld: Boolean): String {
     return when {
-        roleHeld && readiness >= 90 -> "Protezione pronta"
-        roleHeld -> "Protezione quasi pronta"
-        else -> "Serve ancora un passaggio"
+        roleHeld && readiness >= 90 -> stringResource(R.string.readiness_ready)
+        roleHeld -> stringResource(R.string.readiness_almost_ready)
+        else -> stringResource(R.string.readiness_needs_step)
     }
 }
 
+@Composable
 private fun readinessMessage(permissions: PermissionSummary?): String {
     return when {
-        permissions?.callScreeningRoleHeld != true -> "Il ruolo ID chiamante e spam non e ancora attivo: senza questo Android non puo far filtrare davvero le chiamate."
-        permissions.runtimePermissionsGranted != true -> "Il ruolo e attivo, ma mancano alcuni permessi per valutare i numeri con piu precisione."
-        permissions.notificationPermissionGranted != true -> "Il blocco e attivo. Abilita le notifiche per vedere sempre cosa e stato deciso."
-        else -> "Tutto il necessario e configurato. Puoi chiudere l'app: Android la richiamera quando arriva una chiamata."
+        permissions?.callScreeningRoleHeld != true -> stringResource(R.string.readiness_role_missing)
+        permissions.runtimePermissionsGranted != true -> stringResource(R.string.readiness_runtime_missing)
+        permissions.notificationPermissionGranted != true -> stringResource(R.string.readiness_notifications_missing)
+        else -> stringResource(R.string.readiness_complete)
     }
 }

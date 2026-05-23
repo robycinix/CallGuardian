@@ -1,6 +1,8 @@
 package com.callguardian.app.data.backup
 
 import com.callguardian.app.data.local.AppSettingsEntity
+import com.callguardian.app.data.local.BlockGroupEntity
+import com.callguardian.app.data.local.BlockGroupMemberEntity
 import com.callguardian.app.data.local.CallGuardianDao
 import com.callguardian.app.data.local.CountryRuleEntity
 import com.callguardian.app.data.local.EventLogEntity
@@ -22,6 +24,8 @@ class LocalBackupManager @Inject constructor(
             rules = dao.allRules(),
             events = dao.recentEvents(500),
             countries = dao.allCountryRules(),
+            blockGroups = dao.allBlockGroups(),
+            blockGroupMembers = dao.allBlockGroupMembers(),
         )
     )
 
@@ -34,6 +38,8 @@ class LocalBackupManager @Inject constructor(
             rules = payload.rules,
             events = payload.events,
             countries = payload.countries,
+            blockGroups = payload.blockGroups.orEmpty(),
+            blockGroupMembers = payload.blockGroupMembers.orEmpty(),
         )
     }
 
@@ -43,5 +49,7 @@ class LocalBackupManager @Inject constructor(
         @SerializedName("rules") val rules: List<RuleEntity>,
         @SerializedName("events") val events: List<EventLogEntity>,
         @SerializedName("countries") val countries: List<CountryRuleEntity>,
+        @SerializedName("blockGroups") val blockGroups: List<BlockGroupEntity>? = emptyList(),
+        @SerializedName("blockGroupMembers") val blockGroupMembers: List<BlockGroupMemberEntity>? = emptyList(),
     )
 }

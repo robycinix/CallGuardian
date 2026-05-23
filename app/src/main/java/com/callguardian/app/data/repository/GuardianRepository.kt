@@ -2,13 +2,17 @@ package com.callguardian.app.data.repository
 
 import com.callguardian.app.core.model.CallAction
 import com.callguardian.app.core.model.CallDecision
+import com.callguardian.app.core.model.ContactPhoneSelection
 import com.callguardian.app.core.model.CountryStatus
 import com.callguardian.app.core.model.AnonymousMode
 import com.callguardian.app.core.model.ForeignCallMode
 import com.callguardian.app.core.model.ProtectionLevel
 import com.callguardian.app.core.model.RuleAction
 import com.callguardian.app.core.model.RuleType
+import com.callguardian.app.core.model.RiskLevel
 import com.callguardian.app.data.local.AppSettingsEntity
+import com.callguardian.app.data.local.BlockGroupEntity
+import com.callguardian.app.data.local.BlockGroupMemberEntity
 import com.callguardian.app.data.local.CallGuardianDao
 import com.callguardian.app.data.local.CountryRuleEntity
 import com.callguardian.app.data.local.DatabaseSeeder
@@ -35,6 +39,8 @@ class GuardianRepository @Inject constructor(
     private val classifier: CallClassifier,
 ) {
     val rules: Flow<List<RuleEntity>> = dao.observeRules()
+    val blockGroups: Flow<List<BlockGroupEntity>> = dao.observeBlockGroups()
+    val blockGroupMembers: Flow<List<BlockGroupMemberEntity>> = dao.observeBlockGroupMembers()
     val events: Flow<List<EventLogEntity>> = dao.observeRecentEvents(MAX_EVENT_LOGS)
     val statsEvents: Flow<List<StatsEventEntity>> = dao.observeStatsEvents()
     val countryRules: Flow<List<CountryRuleEntity>> = dao.observeCountryRules()
@@ -76,7 +82,7 @@ class GuardianRepository @Inject constructor(
         val rules = dao.enabledRules()
         val recentSimilar = dao.recentEvents(20).count { it.normalizedNumber == normalized }
         val contact = contactLookup.lookup(normalized)
-        val decision = classifier.classify(
+        val decision = blockGroupDecision(normalized, country?.iso, settings) ?: classifier.classify(
             rawNumber = rawNumber,
             settings = settings,
             rules = rules,
@@ -88,7 +94,7 @@ class GuardianRepository @Inject constructor(
             EventLogEntity(
                 phoneNumber = rawNumber.orEmpty().ifBlank { "Anonimo" },
                 normalizedNumber = normalized,
-                contactName = contact?.displayName,
+                contactName = decision.blockGroupContactName ?: contact?.displayName,
                 action = decision.action,
                 riskLevel = decision.riskLevel,
                 score = decision.score,
@@ -107,7 +113,7 @@ class GuardianRepository @Inject constructor(
         val rules = dao.enabledRules()
         val recentSimilar = dao.recentEvents(20).count { it.normalizedNumber == normalized }
         val contact = contactLookup.lookup(normalized)
-        return classifier.classify(
+        return blockGroupDecision(normalized, country?.iso, settings) ?: classifier.classify(
             rawNumber = rawNumber,
             settings = settings,
             rules = rules,
@@ -142,6 +148,77 @@ class GuardianRepository @Inject constructor(
 
     suspend fun addCountryRule(rule: CountryRuleEntity) {
         dao.upsertCountryRule(rule)
+    }
+
+    suspend fun createBlockGroup(name: String): Long {
+        val cleanName = name.trim()
+        require(cleanName.isNotBlank()) { "Nome gruppo mancante" }
+        val now = System.currentTimeMillis()
+        return dao.upsertBlockGroup(
+            BlockGroupEntity(
+                name = cleanName,
+                description = "",
+                createdAtMillis = now,
+                updatedAtMillis = now,
+            )
+        )
+    }
+
+    suspend fun updateBlockGroup(groupId: Long, name: String) {
+        val existing = dao.blockGroup(groupId) ?: return
+        val cleanName = name.trim()
+        require(cleanName.isNotBlank()) { "Nome gruppo mancante" }
+        dao.upsertBlockGroup(
+            existing.copy(
+                name = cleanName,
+                updatedAtMillis = System.currentTimeMillis(),
+            )
+        )
+    }
+
+    suspend fun setBlockGroupEnabled(groupId: Long, enabled: Boolean) {
+        dao.setBlockGroupEnabled(groupId, enabled)
+    }
+
+    suspend fun deleteBlockGroup(groupId: Long) {
+        dao.deleteBlockGroupById(groupId)
+    }
+
+    suspend fun clearBlockGroup(groupId: Long) {
+        dao.deleteBlockGroupMembers(groupId)
+    }
+
+    suspend fun deleteBlockGroupMember(memberId: Long) {
+        dao.deleteBlockGroupMemberById(memberId)
+    }
+
+    suspend fun deleteBlockGroupMembers(memberIds: Collection<Long>) {
+        if (memberIds.isNotEmpty()) {
+            dao.deleteBlockGroupMembersByIds(memberIds.toList())
+        }
+    }
+
+    suspend fun addBlockGroupMembers(groupId: Long, contacts: List<ContactPhoneSelection>): Int {
+        val members = contacts.mapNotNull { contact ->
+            val normalized = normalizer.normalize(contact.phoneNumber)
+            if (normalized == PhoneNumberNormalizer.ANONYMOUS) {
+                null
+            } else {
+                BlockGroupMemberEntity(
+                    groupId = groupId,
+                    contactId = contact.contactId,
+                    contactLookupKey = contact.contactLookupKey,
+                    displayName = contact.displayName.ifBlank { contact.phoneNumber },
+                    phoneNumber = contact.phoneNumber,
+                    normalizedNumber = normalized,
+                )
+            }
+        }.distinctBy { it.normalizedNumber }
+
+        if (members.isNotEmpty()) {
+            dao.upsertBlockGroupMembers(members)
+        }
+        return members.size
     }
 
     suspend fun updateCountryStatus(rule: CountryRuleEntity, status: CountryStatus) {
@@ -203,6 +280,27 @@ class GuardianRepository @Inject constructor(
     }
 
     suspend fun recentEventsSnapshot(): List<EventLogEntity> = dao.recentEvents(500)
+
+    private suspend fun blockGroupDecision(
+        normalized: String,
+        countryIso: String?,
+        settings: AppSettingsEntity,
+    ): CallDecision? {
+        if (settings.protectionLevel == ProtectionLevel.OFF || normalized == PhoneNumberNormalizer.ANONYMOUS) {
+            return null
+        }
+        val match = dao.enabledBlockGroupMatch(normalized) ?: return null
+        return CallDecision(
+            action = CallAction.BLOCKED,
+            score = 100,
+            riskLevel = RiskLevel.LIKELY_SPAM,
+            reason = "Gruppo bloccato: ${match.groupName} - ${match.contactName}",
+            countryIso = countryIso,
+            blockGroupId = match.groupId,
+            blockGroupName = match.groupName,
+            blockGroupContactName = match.contactName,
+        )
+    }
 
     private fun todayStartMillis(): Long =
         LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()

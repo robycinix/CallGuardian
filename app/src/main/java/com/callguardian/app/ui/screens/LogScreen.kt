@@ -31,10 +31,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.callguardian.app.R
 import com.callguardian.app.ui.components.ScreenHeader
 import com.callguardian.app.ui.components.SwipeToDeleteContainer
 import com.callguardian.app.viewmodel.LogsViewModel
@@ -50,8 +52,8 @@ fun LogScreen(viewModel: LogsViewModel = hiltViewModel()) {
     if (confirmClearAll) {
         AlertDialog(
             onDismissRequest = { confirmClearAll = false },
-            title = { Text("Svuotare il registro?") },
-            text = { Text("Tutti gli eventi salvati verranno eliminati dal database locale.") },
+            title = { Text(stringResource(R.string.logs_clear_title)) },
+            text = { Text(stringResource(R.string.logs_clear_body)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -60,12 +62,12 @@ fun LogScreen(viewModel: LogsViewModel = hiltViewModel()) {
                         confirmClearAll = false
                     },
                 ) {
-                    Text("Elimina tutto")
+                    Text(stringResource(R.string.action_delete_all))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { confirmClearAll = false }) {
-                    Text("Annulla")
+                    Text(stringResource(R.string.action_cancel))
                 }
             },
         )
@@ -79,8 +81,8 @@ fun LogScreen(viewModel: LogsViewModel = hiltViewModel()) {
     ) {
         item {
             ScreenHeader(
-                title = "Registro eventi",
-                subtitle = "Ogni chiamata valutata diventa una traccia leggibile e ripulibile.",
+                title = stringResource(R.string.logs_title),
+                subtitle = stringResource(R.string.logs_subtitle),
             )
         }
         if (state.events.isNotEmpty()) {
@@ -91,7 +93,7 @@ fun LogScreen(viewModel: LogsViewModel = hiltViewModel()) {
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     OutlinedButton(onClick = { viewModel.cleanupEventLogs() }) {
-                        Text("Pulisci scaduti")
+                        Text(stringResource(R.string.action_cleanup_expired))
                     }
                     OutlinedButton(
                         enabled = selectedEventIds.isNotEmpty(),
@@ -100,10 +102,10 @@ fun LogScreen(viewModel: LogsViewModel = hiltViewModel()) {
                             selectedEventIds = emptySet()
                         },
                     ) {
-                        Text("Elimina selezionati")
+                        Text(stringResource(R.string.action_delete_selected))
                     }
                     IconButton(onClick = { confirmClearAll = true }) {
-                        Icon(Icons.Default.DeleteSweep, contentDescription = "Elimina tutti gli eventi")
+                        Icon(Icons.Default.DeleteSweep, contentDescription = stringResource(R.string.content_delete_all_events))
                     }
                 }
             }
@@ -123,9 +125,9 @@ fun LogScreen(viewModel: LogsViewModel = hiltViewModel()) {
                     ) {
                         Icon(Icons.Default.VerifiedUser, contentDescription = null)
                         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                            Text("Nessuna chiamata bloccata finora. Sei al sicuro!", fontWeight = FontWeight.SemiBold)
+                            Text(stringResource(R.string.logs_empty_title), fontWeight = FontWeight.SemiBold)
                             Text(
-                                "Quando CallGuardian valutera una chiamata, qui vedrai data, azione e motivo.",
+                                stringResource(R.string.logs_empty_body),
                                 style = MaterialTheme.typography.bodySmall,
                             )
                         }
@@ -161,10 +163,10 @@ fun LogScreen(viewModel: LogsViewModel = hiltViewModel()) {
                         title = event.contactName ?: event.phoneNumber,
                         subtitle = if (expanded) {
                             val numberDetail = event.contactName?.let { "${event.phoneNumber} - " }.orEmpty()
-                            "$numberDetail${event.action.displayName()} - ${event.reason}"
+                            "$numberDetail${event.action.localizedDisplayName()} - ${event.reason}"
                         } else {
                             val numberDetail = event.contactName?.let { "${event.phoneNumber} - " }.orEmpty()
-                            "$numberDetail${event.action.displayName()} - ${event.reason}"
+                            "$numberDetail${event.action.localizedDisplayName()} - ${event.reason}"
                         },
                         timeMillis = event.timestampMillis,
                         action = event.action,
@@ -184,14 +186,14 @@ fun LogScreen(viewModel: LogsViewModel = hiltViewModel()) {
                                 selectedEventIds = selectedEventIds - event.id
                                 expandedEventIds = expandedEventIds - event.id
                             }) {
-                                Icon(Icons.Default.Delete, contentDescription = "Elimina evento")
+                                Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.content_delete_event))
                             }
                         },
                         detail = {
                             DecisionExplanation(
                                 reason = event.reason,
                                 score = event.score,
-                                risk = event.riskLevel.displayName(),
+                                risk = event.riskLevel.localizedDisplayName(),
                                 matchedRuleId = event.matchedRuleId,
                             )
                         },
@@ -217,10 +219,10 @@ private fun DecisionExplanation(
         color = MaterialTheme.colorScheme.surfaceVariant,
     ) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text("Perché questa decisione", fontWeight = FontWeight.SemiBold)
+            Text(stringResource(R.string.decision_explanation_title), fontWeight = FontWeight.SemiBold)
             Text(reason, style = MaterialTheme.typography.bodyMedium)
             Text(
-                "Rischio: ${risk.lowercase()} - punteggio $score - regola ${matchedRuleId ?: "nessuna"}",
+                stringResource(R.string.decision_explanation_detail_format, risk.lowercase(), score, matchedRuleId?.toString() ?: stringResource(R.string.none_value)),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

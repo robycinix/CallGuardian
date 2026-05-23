@@ -1,0 +1,65 @@
+name: Bug report
+description: Segnala un problema riproducibile in CallGuardian.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Grazie per la segnalazione. Evita numeri reali, screenshot con dati personali o log completi non anonimizzati.
+  - type: textarea
+    id: description
+    attributes:
+      label: Descrizione
+      description: Cosa succede?
+      placeholder: La schermata Protezione mostra...
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Passi per Riprodurre
+      description: Elenca i passaggi minimi.
+      placeholder: |
+        1. Apri...
+        2. Tocca...
+        3. Osserva...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Comportamento Atteso
+      description: Cosa ti aspettavi?
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Versione App
+      placeholder: "1.0.0"
+  - type: input
+    id: android
+    attributes:
+      label: Versione Android e Dispositivo
+      placeholder: "Android 14, Pixel 7"
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Protezione chiamate
+        - Regole
+        - Registro
+        - Statistiche
+        - Opzioni
+        - Backup
+        - Permessi Android
+        - UI/Accessibilità
+        - Altro
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log Anonimizzati
+      description: Incolla solo log utili e senza dati personali.
+      render: text

@@ -28,9 +28,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.callguardian.app.R
 
 @Composable
 fun PreloadScreen(modifier: Modifier = Modifier) {
@@ -82,14 +84,14 @@ fun PreloadScreen(modifier: Modifier = Modifier) {
             }
             Spacer(Modifier.height(28.dp))
             Text(
-                text = "CallGuardian",
+                text = stringResource(R.string.app_name),
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.ExtraBold,
                 textAlign = TextAlign.Center,
             )
             Spacer(Modifier.height(8.dp))
             Text(
-                text = "Preparazione protezione in corso",
+                text = stringResource(R.string.preload_status),
                 style = MaterialTheme.typography.bodyMedium,
                 color = colors.onSurfaceVariant,
                 textAlign = TextAlign.Center,

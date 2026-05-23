@@ -19,7 +19,6 @@ class PermissionChecker @Inject constructor(
 ) {
     fun summary(): PermissionSummary {
         val required = buildList {
-            add(Manifest.permission.READ_PHONE_STATE)
             add(Manifest.permission.READ_CONTACTS)
         }
         val runtimeGranted = required.all {

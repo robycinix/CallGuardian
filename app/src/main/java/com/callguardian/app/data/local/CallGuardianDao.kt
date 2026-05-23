@@ -21,6 +21,76 @@ interface CallGuardianDao {
     @Query("SELECT * FROM rules ORDER BY priority ASC, updatedAtMillis DESC")
     suspend fun allRules(): List<RuleEntity>
 
+    @Query("SELECT * FROM block_groups ORDER BY updatedAtMillis DESC, name COLLATE NOCASE ASC")
+    fun observeBlockGroups(): Flow<List<BlockGroupEntity>>
+
+    @Query("SELECT * FROM block_group_members ORDER BY displayName COLLATE NOCASE ASC, phoneNumber ASC")
+    fun observeBlockGroupMembers(): Flow<List<BlockGroupMemberEntity>>
+
+    @Query("SELECT * FROM block_groups ORDER BY updatedAtMillis DESC, name COLLATE NOCASE ASC")
+    suspend fun allBlockGroups(): List<BlockGroupEntity>
+
+    @Query("SELECT * FROM block_group_members ORDER BY displayName COLLATE NOCASE ASC, phoneNumber ASC")
+    suspend fun allBlockGroupMembers(): List<BlockGroupMemberEntity>
+
+    @Query("SELECT * FROM block_groups WHERE id = :groupId LIMIT 1")
+    suspend fun blockGroup(groupId: Long): BlockGroupEntity?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertBlockGroup(group: BlockGroupEntity): Long
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertBlockGroups(groups: List<BlockGroupEntity>)
+
+    @Update
+    suspend fun updateBlockGroup(group: BlockGroupEntity)
+
+    @Delete
+    suspend fun deleteBlockGroup(group: BlockGroupEntity)
+
+    @Query("DELETE FROM block_groups WHERE id = :groupId")
+    suspend fun deleteBlockGroupById(groupId: Long): Int
+
+    @Query("DELETE FROM block_groups")
+    suspend fun deleteAllBlockGroups(): Int
+
+    @Query("UPDATE block_groups SET enabled = :enabled, updatedAtMillis = :updatedAt WHERE id = :groupId")
+    suspend fun setBlockGroupEnabled(groupId: Long, enabled: Boolean, updatedAt: Long = System.currentTimeMillis())
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertBlockGroupMember(member: BlockGroupMemberEntity): Long
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertBlockGroupMembers(members: List<BlockGroupMemberEntity>)
+
+    @Query("DELETE FROM block_group_members WHERE id = :memberId")
+    suspend fun deleteBlockGroupMemberById(memberId: Long): Int
+
+    @Query("DELETE FROM block_group_members WHERE id IN (:memberIds)")
+    suspend fun deleteBlockGroupMembersByIds(memberIds: List<Long>): Int
+
+    @Query("DELETE FROM block_group_members WHERE groupId = :groupId")
+    suspend fun deleteBlockGroupMembers(groupId: Long): Int
+
+    @Query("DELETE FROM block_group_members")
+    suspend fun deleteAllBlockGroupMembers(): Int
+
+    @Query(
+        """
+        SELECT
+            g.id AS groupId,
+            g.name AS groupName,
+            m.displayName AS contactName,
+            m.phoneNumber AS phoneNumber
+        FROM block_group_members m
+        INNER JOIN block_groups g ON g.id = m.groupId
+        WHERE g.enabled = 1 AND m.normalizedNumber = :normalizedNumber
+        ORDER BY g.updatedAtMillis DESC, g.id DESC
+        LIMIT 1
+        """
+    )
+    suspend fun enabledBlockGroupMatch(normalizedNumber: String): BlockGroupMatchRow?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertRule(rule: RuleEntity): Long
 
@@ -147,11 +217,21 @@ interface CallGuardianDao {
         rules: List<RuleEntity>,
         events: List<EventLogEntity>,
         countries: List<CountryRuleEntity>,
+        blockGroups: List<BlockGroupEntity>,
+        blockGroupMembers: List<BlockGroupMemberEntity>,
     ) {
         upsertSettings(settings)
+        deleteAllBlockGroupMembers()
+        deleteAllBlockGroups()
         deleteAllRules()
         if (rules.isNotEmpty()) {
             upsertRules(rules)
+        }
+        if (blockGroups.isNotEmpty()) {
+            upsertBlockGroups(blockGroups)
+        }
+        if (blockGroupMembers.isNotEmpty()) {
+            upsertBlockGroupMembers(blockGroupMembers)
         }
         if (countries.isNotEmpty()) {
             deleteAllCountryRules()
@@ -169,6 +249,13 @@ interface CallGuardianDao {
 data class CountryStatRow(
     val countryIso: String?,
     val total: Int,
+)
+
+data class BlockGroupMatchRow(
+    val groupId: Long,
+    val groupName: String,
+    val contactName: String,
+    val phoneNumber: String,
 )
 
 private fun EventLogEntity.toStatsEvent() = StatsEventEntity(

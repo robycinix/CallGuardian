@@ -1,6 +1,8 @@
 package com.callguardian.app.data.local
 
 import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.callguardian.app.core.model.AnonymousMode
 import com.callguardian.app.core.model.CallAction
@@ -36,6 +38,43 @@ data class RuleEntity(
         }
     }
 }
+
+@Entity(tableName = "block_groups")
+data class BlockGroupEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val name: String,
+    val description: String = "",
+    val enabled: Boolean = true,
+    val createdAtMillis: Long = System.currentTimeMillis(),
+    val updatedAtMillis: Long = System.currentTimeMillis(),
+)
+
+@Entity(
+    tableName = "block_group_members",
+    foreignKeys = [
+        ForeignKey(
+            entity = BlockGroupEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["groupId"],
+            onDelete = ForeignKey.CASCADE,
+        )
+    ],
+    indices = [
+        Index("groupId"),
+        Index(value = ["groupId", "normalizedNumber"], unique = true),
+        Index("normalizedNumber"),
+    ],
+)
+data class BlockGroupMemberEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val groupId: Long,
+    val contactId: Long? = null,
+    val contactLookupKey: String? = null,
+    val displayName: String,
+    val phoneNumber: String,
+    val normalizedNumber: String,
+    val addedAtMillis: Long = System.currentTimeMillis(),
+)
 
 @Entity(tableName = "event_logs")
 data class EventLogEntity(
@@ -87,4 +126,5 @@ data class AppSettingsEntity(
     val palette: ThemePalette = ThemePalette.SECURITY_BLUE,
     val highContrast: Boolean = false,
     val contextualHelpEnabled: Boolean = true,
+    val languageCode: String = "system",
 )

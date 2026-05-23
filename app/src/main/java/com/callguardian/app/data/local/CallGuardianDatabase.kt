@@ -7,12 +7,14 @@ import androidx.room.TypeConverters
 @Database(
     entities = [
         RuleEntity::class,
+        BlockGroupEntity::class,
+        BlockGroupMemberEntity::class,
         EventLogEntity::class,
         StatsEventEntity::class,
         CountryRuleEntity::class,
         AppSettingsEntity::class,
     ],
-    version = 3,
+    version = 6,
     exportSchema = false,
 )
 @TypeConverters(Converters::class)

@@ -164,7 +164,6 @@ if (-not $SkipInstall) {
 
 Write-Step "Grant runtime permissions"
 $permissions = @(
-    "android.permission.READ_PHONE_STATE",
     "android.permission.READ_CONTACTS",
     "android.permission.POST_NOTIFICATIONS"
 )

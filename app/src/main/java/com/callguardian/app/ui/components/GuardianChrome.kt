@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.LocalContentColor
@@ -35,7 +36,8 @@ fun GuardianAppChrome(content: @Composable BoxScope.() -> Unit) {
                         colors.background,
                     ),
                 ),
-            ),
+            )
+            .imePadding(),
     ) {
         Canvas(Modifier.fillMaxSize()) {
             val w = size.width

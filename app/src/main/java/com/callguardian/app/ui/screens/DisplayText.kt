@@ -1,5 +1,9 @@
 package com.callguardian.app.ui.screens
 
+import androidx.annotation.StringRes
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.callguardian.app.R
 import com.callguardian.app.core.model.AnonymousMode
 import com.callguardian.app.core.model.CallAction
 import com.callguardian.app.core.model.CountryStatus
@@ -83,3 +87,116 @@ fun RuleAction.displayName(): String = when (this) {
     RuleAction.SILENCE -> "Silenzia"
     RuleAction.BLOCK -> "Blocca"
 }
+
+@StringRes
+fun ProtectionLevel.stringRes(): Int = when (this) {
+    ProtectionLevel.OFF -> R.string.protection_level_off
+    ProtectionLevel.LIGHT -> R.string.protection_level_light
+    ProtectionLevel.BALANCED -> R.string.protection_level_balanced
+    ProtectionLevel.AGGRESSIVE -> R.string.protection_level_aggressive
+    ProtectionLevel.CUSTOM -> R.string.protection_level_custom
+}
+
+@StringRes
+fun AnonymousMode.stringRes(): Int = when (this) {
+    AnonymousMode.WARN -> R.string.anonymous_mode_warn
+    AnonymousMode.SILENCE -> R.string.anonymous_mode_silence
+    AnonymousMode.BLOCK -> R.string.anonymous_mode_block
+    AnonymousMode.ALLOW_AFTER_REPEATED_ATTEMPTS -> R.string.anonymous_mode_allow_repeated
+}
+
+@StringRes
+fun ForeignCallMode.stringRes(): Int = when (this) {
+    ForeignCallMode.WARN_ONLY -> R.string.foreign_mode_warn_only
+    ForeignCallMode.BLOCK_UNKNOWN_FOREIGN -> R.string.foreign_mode_block_unknown
+    ForeignCallMode.BLOCK_ALL_FOREIGN -> R.string.foreign_mode_block_all
+    ForeignCallMode.BLOCK_BY_COUNTRY -> R.string.foreign_mode_block_country
+    ForeignCallMode.SCHEDULED -> R.string.foreign_mode_scheduled
+}
+
+@StringRes
+fun ThemeMode.stringRes(): Int = when (this) {
+    ThemeMode.SYSTEM -> R.string.theme_mode_system
+    ThemeMode.LIGHT -> R.string.theme_mode_light
+    ThemeMode.DARK -> R.string.theme_mode_dark
+}
+
+@StringRes
+fun ThemePalette.stringRes(): Int = when (this) {
+    ThemePalette.SECURITY_BLUE -> R.string.theme_palette_security_blue
+    ThemePalette.PROTECTION_GREEN -> R.string.theme_palette_protection_green
+    ThemePalette.PROFESSIONAL_GRAY -> R.string.theme_palette_professional_gray
+    ThemePalette.TECH_PURPLE -> R.string.theme_palette_tech_purple
+}
+
+@StringRes
+fun CountryStatus.stringRes(): Int = when (this) {
+    CountryStatus.ALLOWED -> R.string.country_status_allowed
+    CountryStatus.MONITORED -> R.string.country_status_monitored
+    CountryStatus.BLOCKED -> R.string.country_status_blocked
+}
+
+@StringRes
+fun CallAction.stringRes(): Int = when (this) {
+    CallAction.ALLOWED -> R.string.call_action_allowed
+    CallAction.WARNED -> R.string.call_action_warned
+    CallAction.SILENCED -> R.string.call_action_silenced
+    CallAction.BLOCKED -> R.string.call_action_blocked
+}
+
+@StringRes
+fun RiskLevel.stringRes(): Int = when (this) {
+    RiskLevel.NORMAL -> R.string.risk_level_normal
+    RiskLevel.SUSPICIOUS -> R.string.risk_level_suspicious
+    RiskLevel.LIKELY_SPAM -> R.string.risk_level_likely_spam
+}
+
+@StringRes
+fun RuleType.stringRes(): Int = when (this) {
+    RuleType.WHITELIST -> R.string.rule_type_whitelist
+    RuleType.BLACKLIST_NUMBER -> R.string.rule_type_blacklist_number
+    RuleType.PREFIX -> R.string.rule_type_prefix
+    RuleType.RANGE -> R.string.rule_type_range
+    RuleType.COUNTRY -> R.string.rule_type_country
+    RuleType.ANONYMOUS -> R.string.rule_type_anonymous
+    RuleType.FOREIGN_UNKNOWN -> R.string.rule_type_foreign_unknown
+    RuleType.SCHEDULE -> R.string.rule_type_schedule
+}
+
+@StringRes
+fun RuleAction.stringRes(): Int = when (this) {
+    RuleAction.ALLOW -> R.string.rule_action_allow
+    RuleAction.WARN -> R.string.rule_action_warn
+    RuleAction.SILENCE -> R.string.rule_action_silence
+    RuleAction.BLOCK -> R.string.rule_action_block
+}
+
+@Composable
+fun ProtectionLevel.localizedDisplayName(): String = stringResource(stringRes())
+
+@Composable
+fun AnonymousMode.localizedDisplayName(): String = stringResource(stringRes())
+
+@Composable
+fun ForeignCallMode.localizedDisplayName(): String = stringResource(stringRes())
+
+@Composable
+fun ThemeMode.localizedDisplayName(): String = stringResource(stringRes())
+
+@Composable
+fun ThemePalette.localizedDisplayName(): String = stringResource(stringRes())
+
+@Composable
+fun CountryStatus.localizedDisplayName(): String = stringResource(stringRes())
+
+@Composable
+fun CallAction.localizedDisplayName(): String = stringResource(stringRes())
+
+@Composable
+fun RiskLevel.localizedDisplayName(): String = stringResource(stringRes())
+
+@Composable
+fun RuleType.localizedDisplayName(): String = stringResource(stringRes())
+
+@Composable
+fun RuleAction.localizedDisplayName(): String = stringResource(stringRes())

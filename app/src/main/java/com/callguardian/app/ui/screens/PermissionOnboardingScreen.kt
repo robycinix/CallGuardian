@@ -110,9 +110,9 @@ fun PermissionOnboardingScreen(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         PermissionSetupRow(
-            title = "Telefono e rubrica",
-            detail = "Tocca Consenti. Serve per capire chi chiama e non bloccare i contatti salvati.",
-            example = "Esempio: se chiama Maria in rubrica, passa.",
+            title = "Rubrica",
+            detail = "Tocca Consenti. Serve per riconoscere i contatti salvati.",
+            example = "Esempio: se chiama Maria in rubrica, CallGuardian la riconosce.",
             complete = permissions.runtimePermissionsGranted,
             icon = Icons.Default.Phone,
             onClick = onRuntimePermissions,
@@ -257,7 +257,7 @@ private fun PermissionVisualGuide() {
     ) {
         MiniPhoneExample(
             title = "1. Consenti",
-            body = "Telefono Rubrica Notifiche",
+            body = "Rubrica Notifiche",
             modifier = Modifier.weight(1f),
         )
         MiniPhoneExample(

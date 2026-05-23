@@ -21,6 +21,16 @@ data class CallDecision(
     val reason: String,
     val matchedRuleId: Long? = null,
     val countryIso: String? = null,
+    val blockGroupId: Long? = null,
+    val blockGroupName: String? = null,
+    val blockGroupContactName: String? = null,
+)
+
+data class ContactPhoneSelection(
+    val displayName: String,
+    val phoneNumber: String,
+    val contactId: Long? = null,
+    val contactLookupKey: String? = null,
 )
 
 data class PermissionSummary(

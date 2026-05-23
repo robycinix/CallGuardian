@@ -110,12 +110,12 @@ class ProtectionViewModel @Inject constructor(
     ): Int {
         var score = 0
         if (permissions?.runtimePermissionsGranted == true) score += 25
-        if (permissions?.callScreeningRoleHeld == true) score += 35
+        if (permissions?.callScreeningRoleHeld == true) score += 40
         if (permissions?.notificationPermissionGranted == true) score += 10
         if (permissions?.overlayAllowed == true) score += 5
         score += when (settings.protectionLevel.name) {
-            "AGGRESSIVE" -> 25
-            "BALANCED", "CUSTOM" -> 18
+            "AGGRESSIVE" -> 20
+            "BALANCED", "CUSTOM" -> 15
             "LIGHT" -> 10
             else -> 0
         }

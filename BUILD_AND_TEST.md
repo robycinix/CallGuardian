@@ -35,7 +35,6 @@ app/build/outputs/apk/debug/app-debug.apk
 
 Permessi runtime implementati:
 
-- `READ_PHONE_STATE`: stato telefonico necessario al contesto chiamate.
 - `READ_CONTACTS`: consente la regola "estero sconosciuto non in rubrica".
 - `POST_NOTIFICATIONS`: richiesto da Android 13 per gli avvisi heads-up.
 - `SYSTEM_ALERT_WINDOW`: solo per popup overlay, da abilitare manualmente nelle impostazioni Android.

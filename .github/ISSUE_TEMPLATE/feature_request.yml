@@ -1,0 +1,45 @@
+name: Feature request
+description: Proponi un miglioramento per CallGuardian.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problema
+      description: Quale esigenza vuoi risolvere?
+      placeholder: Vorrei poter...
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Soluzione Proposta
+      description: Come immagini il comportamento ideale?
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Protezione chiamate
+        - Regole
+        - Registro
+        - Statistiche
+        - Opzioni
+        - Backup
+        - Privacy/Sicurezza
+        - UI/Accessibilità
+        - Altro
+  - type: textarea
+    id: privacy
+    attributes:
+      label: Impatto Privacy
+      description: La proposta richiede nuovi dati, permessi o servizi esterni?
+      placeholder: No, resta tutto locale.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternative Considerate
+      description: Ci sono soluzioni più semplici o locali?

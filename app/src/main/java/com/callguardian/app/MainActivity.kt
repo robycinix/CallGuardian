@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.role.RoleManager
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -41,6 +42,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import java.util.Locale
 
 val LocalPermissionActions = staticCompositionLocalOf<PermissionActions> {
     error("PermissionActions not provided")
@@ -114,6 +116,15 @@ class MainActivity : ComponentActivity() {
                 delay(900)
                 preloadMinimumElapsed = true
             }
+            LaunchedEffect(settings.languageCode) {
+                if (settings.languageCode != currentLanguageCode) {
+                    getSharedPreferences(PREFS_LANGUAGE, Context.MODE_PRIVATE)
+                        .edit()
+                        .putString(KEY_LANGUAGE_CODE, settings.languageCode)
+                        .apply()
+                    recreate()
+                }
+            }
             LaunchedEffect(Unit) { refreshPermissionSummary() }
             androidx.compose.runtime.DisposableEffect(lifecycleOwner) {
                 val observer = LifecycleEventObserver { _, event ->
@@ -130,7 +141,6 @@ class MainActivity : ComponentActivity() {
                 requestRuntimePermissions = {
                     currentPermissionStep = PermissionStep.RUNTIME
                     val permissions = buildList {
-                        add(Manifest.permission.READ_PHONE_STATE)
                         add(Manifest.permission.READ_CONTACTS)
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                             add(Manifest.permission.POST_NOTIFICATIONS)
@@ -162,7 +172,8 @@ class MainActivity : ComponentActivity() {
             val runNextSetupStep: (Boolean) -> Boolean = { automatic ->
                 refreshPermissionSummary()
                 when {
-                    !permissionSummary.runtimePermissionsGranted || !permissionSummary.notificationPermissionGranted -> {
+                    !permissionSummary.runtimePermissionsGranted ||
+                        !permissionSummary.notificationPermissionGranted -> {
                         if (automatic && automaticRuntimeRequested) {
                             false
                         } else {
@@ -244,7 +255,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private enum class PermissionStep(val label: String) {
-        RUNTIME("Permessi telefono e rubrica"),
+        RUNTIME("Permessi rubrica e notifiche"),
         CALL_SCREENING("Ruolo ID chiamante e spam"),
         OVERLAY("Popup sopra le altre app"),
     }
@@ -255,7 +266,29 @@ class MainActivity : ComponentActivity() {
             notificationPermissionGranted &&
             overlayAllowed
 
+    override fun attachBaseContext(newBase: Context) {
+        val languageCode = newBase
+            .getSharedPreferences(PREFS_LANGUAGE, Context.MODE_PRIVATE)
+            .getString(KEY_LANGUAGE_CODE, LANGUAGE_SYSTEM)
+            ?: LANGUAGE_SYSTEM
+        currentLanguageCode = languageCode
+        super.attachBaseContext(newBase.withLanguage(languageCode))
+    }
+
+    private fun Context.withLanguage(languageCode: String): Context {
+        if (languageCode == LANGUAGE_SYSTEM) return this
+        val locale = Locale.forLanguageTag(languageCode).takeIf { it.language.isNotBlank() } ?: return this
+        val configuration = Configuration(resources.configuration)
+        Locale.setDefault(locale)
+        configuration.setLocale(locale)
+        return createConfigurationContext(configuration)
+    }
+
     private companion object {
+        const val LANGUAGE_SYSTEM = "system"
+        const val PREFS_LANGUAGE = "language"
+        const val KEY_LANGUAGE_CODE = "language_code"
         const val KEY_FIRST_SETUP_FINISHED = "first_setup_finished"
+        var currentLanguageCode = LANGUAGE_SYSTEM
     }
 }

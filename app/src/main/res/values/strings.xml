@@ -2,4 +2,146 @@
     <string name="app_name">CallGuardian</string>
     <string name="notification_channel_calls">Avvisi chiamate</string>
     <string name="notification_channel_status">Stato protezione</string>
+    <string name="notification_channel_calls_description">Registro degli avvisi locali per chiamate sospette o bloccate</string>
+    <string name="preload_status">Preparazione protezione in corso</string>
+
+    <string name="nav_protection">Protezione</string>
+    <string name="nav_rules">Regole</string>
+    <string name="nav_logs">Registro</string>
+    <string name="nav_stats">Statistiche</string>
+    <string name="nav_settings">Opzioni</string>
+
+    <string name="protection_level_off">Disattivata</string>
+    <string name="protection_level_light">Leggera</string>
+    <string name="protection_level_balanced">Bilanciata</string>
+    <string name="protection_level_aggressive">Aggressiva</string>
+    <string name="protection_level_custom">Personalizzata</string>
+
+    <string name="anonymous_mode_warn">Avvisa</string>
+    <string name="anonymous_mode_silence">Silenzia</string>
+    <string name="anonymous_mode_block">Blocca</string>
+    <string name="anonymous_mode_allow_repeated">Consenti dopo tentativi ripetuti</string>
+
+    <string name="foreign_mode_warn_only">Solo avviso</string>
+    <string name="foreign_mode_block_unknown">Blocca esteri sconosciuti</string>
+    <string name="foreign_mode_block_all">Blocca tutti gli esteri</string>
+    <string name="foreign_mode_block_country">Blocca per nazione</string>
+    <string name="foreign_mode_scheduled">Programmata</string>
+
+    <string name="theme_mode_system">Sistema</string>
+    <string name="theme_mode_light">Chiaro</string>
+    <string name="theme_mode_dark">Scuro</string>
+
+    <string name="theme_palette_security_blue">Blu sicurezza</string>
+    <string name="theme_palette_protection_green">Verde protezione</string>
+    <string name="theme_palette_professional_gray">Grigio professionale</string>
+    <string name="theme_palette_tech_purple">Viola tecnico</string>
+
+    <string name="country_status_allowed">Consentita</string>
+    <string name="country_status_monitored">Monitorata</string>
+    <string name="country_status_blocked">Bloccata</string>
+
+    <string name="call_action_allowed">Consentita</string>
+    <string name="call_action_warned">Avviso</string>
+    <string name="call_action_silenced">Silenziata</string>
+    <string name="call_action_blocked">Bloccata</string>
+
+    <string name="risk_level_normal">Normale</string>
+    <string name="risk_level_suspicious">Sospetta</string>
+    <string name="risk_level_likely_spam">Probabile spam</string>
+
+    <string name="rule_type_whitelist">Numero consentito</string>
+    <string name="rule_type_blacklist_number">Numero bloccato</string>
+    <string name="rule_type_prefix">Pattern iniziale</string>
+    <string name="rule_type_range">Intervallo</string>
+    <string name="rule_type_country">Nazione</string>
+    <string name="rule_type_anonymous">Anonimo</string>
+    <string name="rule_type_foreign_unknown">Estero sconosciuto</string>
+    <string name="rule_type_schedule">Orario</string>
+
+    <string name="rule_action_allow">Consenti</string>
+    <string name="rule_action_warn">Avvisa</string>
+    <string name="rule_action_silence">Silenzia</string>
+    <string name="rule_action_block">Blocca</string>
+
+    <string name="protection_status_title">Stato protezione</string>
+    <string name="protection_level_help_title">Livello protezione</string>
+    <string name="protection_level_help_explanation">Regola la severita del punteggio rischio prima del filtro chiamate.</string>
+    <string name="protection_level_help_benefits">Permette di adattare l\'app al tuo profilo di rischio.</string>
+    <string name="protection_level_help_drawbacks">Livelli aggressivi possono aumentare gli avvisi.</string>
+    <string name="protection_level_help_advice">Bilanciata e adatta all\'uso quotidiano.</string>
+    <string name="protection_level_help_android_limits">Il blocco effettivo richiede il ruolo ID chiamante e spam.</string>
+    <string name="blocked_today_format">Chiamate bloccate oggi: %1$d</string>
+    <string name="brand_protected">Protetto</string>
+    <string name="command_center_title">Centro protezione</string>
+    <string name="command_center_android_connected">Scudo chiamate agganciato ad Android</string>
+    <string name="command_center_last_step">Ultimo aggancio da completare</string>
+    <string name="metric_status">Stato</string>
+    <string name="metric_status_operational">Operativa</string>
+    <string name="metric_status_incomplete">Da completare</string>
+    <string name="metric_blocked">Bloccate</string>
+    <string name="metric_level">Livello</string>
+    <string name="protection_operational_message">CallGuardian e operativo in attesa di chiamate sospette!</string>
+    <string name="protection_role_missing_message">Attiva il ruolo ID chiamante e spam: e il passaggio che abilita il blocco reale.</string>
+    <string name="setup_tour_title">Visita guidata</string>
+    <string name="setup_tour_heading">Configuriamo CallGuardian con le scelte ideali</string>
+    <string name="setup_tour_body">La guida resta visibile solo finche manca qualcosa. Quando la protezione e pronta, sparisce.</string>
+    <string name="setup_recommended">Applica configurazione consigliata</string>
+    <string name="setup_phone_title">Permesso rubrica</string>
+    <string name="setup_phone_detail">Serve per riconoscere i contatti salvati e applicare le regole basate sulla rubrica.</string>
+    <string name="setup_call_screening_title">Ruolo ID chiamante e spam</string>
+    <string name="setup_call_screening_detail">E il permesso decisivo: consente ad Android di affidare le chiamate a CallGuardian.</string>
+    <string name="setup_notifications_title">Notifiche</string>
+    <string name="setup_notifications_detail">Mostrano il risultato dopo un blocco o un avviso.</string>
+    <string name="setup_overlay_title">Popup durante la chiamata</string>
+    <string name="setup_overlay_detail">Opzionale, ma rende visibile l\'avviso sopra le altre app.</string>
+    <string name="action_grant">Concedi</string>
+    <string name="action_activate_role">Attiva ruolo</string>
+    <string name="action_open_popup">Apri popup</string>
+    <string name="content_completed">Completato</string>
+    <string name="event_action_format">Azione: %1$s</string>
+
+    <string name="protection_headline_active">Protezione locale attiva sulle chiamate in arrivo</string>
+    <string name="protection_headline_incomplete">Completa la configurazione per attivare il blocco chiamate</string>
+    <string name="readiness_ready">Protezione pronta</string>
+    <string name="readiness_almost_ready">Protezione quasi pronta</string>
+    <string name="readiness_needs_step">Serve ancora un passaggio</string>
+    <string name="readiness_role_missing">Il ruolo ID chiamante e spam non e ancora attivo: senza questo Android non puo far filtrare davvero le chiamate.</string>
+    <string name="readiness_runtime_missing">Il ruolo e attivo, ma mancano alcuni permessi per valutare i numeri con piu precisione.</string>
+    <string name="readiness_notifications_missing">Il blocco e attivo. Abilita le notifiche per vedere sempre cosa e stato deciso.</string>
+    <string name="readiness_complete">Tutto il necessario e configurato. Puoi chiudere l\'app: Android la richiamera quando arriva una chiamata.</string>
+
+    <string name="logs_clear_title">Svuotare il registro?</string>
+    <string name="logs_clear_body">Tutti gli eventi salvati verranno eliminati dal database locale.</string>
+    <string name="action_delete_all">Elimina tutto</string>
+    <string name="action_cancel">Annulla</string>
+    <string name="logs_title">Registro eventi</string>
+    <string name="logs_subtitle">Ogni chiamata valutata diventa una traccia leggibile e ripulibile.</string>
+    <string name="action_cleanup_expired">Pulisci scaduti</string>
+    <string name="action_delete_selected">Elimina selezionati</string>
+    <string name="content_delete_all_events">Elimina tutti gli eventi</string>
+    <string name="logs_empty_title">Nessuna chiamata bloccata finora. Sei al sicuro!</string>
+    <string name="logs_empty_body">Quando CallGuardian valutera una chiamata, qui vedrai data, azione e motivo.</string>
+    <string name="content_delete_event">Elimina evento</string>
+    <string name="decision_explanation_title">Perche questa decisione</string>
+    <string name="decision_explanation_detail_format">Rischio: %1$s - punteggio %2$d - regola %3$s</string>
+    <string name="none_value">nessuna</string>
+    <string name="simulation_number_format">Numero: %1$s</string>
+    <string name="simulation_outcome_format">Esito: %1$s</string>
+    <string name="simulation_risk_format">Rischio: %1$s - %2$d</string>
+    <string name="simulation_reason_format">Motivo: %1$s</string>
+    <string name="rule_subtitle_format">%1$s - %2$s</string>
+    <string name="country_status_excluded">Esclusa</string>
+    <string name="country_status_block_active">Blocco attivo</string>
+    <string name="country_status_not_blocked">Non bloccata</string>
+    <string name="settings_language_title">Lingua</string>
+    <string name="settings_language_description">Scegli la lingua dell\'interfaccia di CallGuardian.</string>
+    <string name="language_system">Sistema</string>
+    <string name="language_italian">Italiano</string>
+    <string name="language_english">Inglese</string>
+    <string name="language_spanish">Spagnolo</string>
+    <string name="language_french">Francese</string>
+    <string name="language_german">Tedesco</string>
+    <string name="language_portuguese">Portoghese</string>
+    <string name="content_selected">Selezionata</string>
 </resources>
