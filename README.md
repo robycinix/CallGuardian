@@ -181,4 +181,4 @@ Il progetto è una base Android reale e funzionante per protezione chiamate loca
 
 ## Licenza
 
-Licenza non ancora specificata.
+Questo progetto è distribuito sotto licenza Apache License 2.0. Vedi [LICENSE](LICENSE).
